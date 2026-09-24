@@ -1,0 +1,22 @@
+---
+title: "Rate Limits"
+sidebarTitle: "Rate Limits"
+description: "The Demat Escrow API does not publish a fixed quota. Handle HTTP 429 with backoff, prefer webhooks over polling, and page through lists."
+---
+
+This API does **not** currently publish a fixed per-minute quota. That can change as traffic grows. Build clients that can handle **HTTP 429** and avoid patterns that hammer a single endpoint.
+
+## If you receive 429
+
+1. Stop retrying in a tight loop.
+2. Wait and retry with backoff.
+3. Check whether you are polling a resource that already has a [webhook](/api-reference/guides/webhooks).
+
+## Stay well behaved
+
+- **Prefer webhooks** for escrow funded/released/refunded, payouts, and wallet credits. Do not poll `GET /escrows/{id}` in a loop after creating checkout.
+- **Cache stable lookups** such as the bank list (`GET /identity/banks`).
+- **Page through lists** instead of requesting huge windows. Default page size is 20; maximum is 100. See [Pagination](/api-reference/guides/pagination).
+- **Use idempotency keys** so retries after timeouts do not double-release or double-pay. See [Idempotency](/api-reference/guides/idempotency).
+
+Do not use the test environment for load testing.

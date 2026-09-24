@@ -1,0 +1,73 @@
+---
+title: "Webhooks"
+sidebarTitle: "Webhooks"
+description: "Async events like escrow.funded and withdrawal.completed are delivered to your webhookUrl. Verify HMAC signatures and respond 2xx quickly."
+---
+
+Asynchronous events (escrow funded, payout completed, wallet credited, and similar) are delivered to the merchant `webhookUrl` as HTTP POSTs.
+
+## Verify the signature
+
+We sign the raw body with your `webhookSecret` (`whsec_...` from the merchant account):
+
+```text
+HMAC-SHA256(webhookSecret, "{timestamp}.{raw_body}")
+```
+
+Compare that hex digest to `x-demat-signature` using a constant-time compare. Recreate the string as `timestamp + '.' + raw_body` where `timestamp` is the `x-demat-timestamp` header (unix seconds).
+
+## Headers
+
+| Header | Description |
+| --- | --- |
+| `Content-Type` | `application/json` |
+| `x-demat-signature` | HMAC hex digest |
+| `x-demat-event` | Event name, for example `escrow.funded` |
+| `x-demat-delivery-id` | Delivery id for retries / logging |
+| `x-demat-timestamp` | Unix timestamp used in the signature |
+
+Respond with **2xx** within a few seconds. Non-2xx responses are marked failed and retried.
+
+## Events
+
+- `merchant.verified`
+- `customer.created`
+- `payment.pending`
+- `payment.succeeded`
+- `payment.failed`
+- `escrow.created`
+- `escrow.funded`
+- `escrow.released`
+- `escrow.refunded`
+- `escrow.cancelled`
+- `withdrawal.created`
+- `withdrawal.processing`
+- `withdrawal.completed`
+- `withdrawal.failed`
+- `wallet.created`
+- `wallet.activated`
+- `wallet.credited`
+- `customer.kyc.updated`
+- `dispute.opened`
+- `dispute.resolved`
+- `escrow.partially_released`
+
+## Payload
+
+Bodies are JSON with camelCase fields:
+
+```json
+{
+  "id": "evt_01hxyz",
+  "type": "escrow.funded",
+  "createdAt": "2026-09-18T12:00:00.000Z",
+  "data": {
+    "escrowId": "esc_01hxyz",
+    "merchantReference": "order_12345",
+    "amount": 40000,
+    "currency": "NGN"
+  }
+}
+```
+
+Set `webhookUrl` on the merchant profile from the dashboard. Do not expose `webhookSecret` in client apps.

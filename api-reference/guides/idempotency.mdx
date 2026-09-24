@@ -1,0 +1,32 @@
+---
+title: "Idempotency"
+sidebarTitle: "Idempotency"
+description: "Money-moving POST requests require an Idempotency-Key header so retries do not create a second escrow, release, or payout."
+---
+
+Money-moving `POST`s require an `Idempotency-Key` header so a retry does not create a second escrow, release, or payout.
+
+## When it is required
+
+Send `Idempotency-Key` on:
+
+- `POST /escrows`
+- `POST /escrows/{id}/release`
+- `POST /escrows/{id}/refund`
+- `POST /escrows/{id}/cancel`
+- `POST /escrows/{id}/disputes`
+- `POST /escrows/{id}/disputes/{id}/resolve`
+- `POST /checkout/sessions`
+- `POST /wallets`
+- `POST /wallets/{id}/credits`
+- `POST /withdrawals`
+
+Omitting the header on those routes returns **400** `INVALID_REQUEST`.
+
+## Behaviour
+
+- The key is scoped to the merchant.
+- Replaying the **same** key with the **same** method, path, and body returns the original response.
+- Reusing a key with a **different** body returns **409**.
+
+Generate a unique key per logical action (UUID is fine). Store it with the action in your database so timeouts can retry safely.

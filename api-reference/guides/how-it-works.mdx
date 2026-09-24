@@ -1,0 +1,58 @@
+---
+title: "How Demat Escrow Works"
+sidebarTitle: "How It Works"
+description: "The full lifecycle of a Demat escrow: create customers, lock funds, release or refund, and pay out to a bank. Amounts are naira integers."
+---
+
+This is the product, end to end. You are the merchant. A **payer** is paying. A **payee** is receiving on release. Amounts are naira integers.
+
+Money in a hold is **ours to move by API**, not the customer's bank. Release credits the payee's `available`. A bank payout is a later `POST /withdrawals`.
+
+## 1. Create customers
+
+`POST /customers` for the payer and the payee. You get identity, `walletId`, and zero balances. `account` is `null`. No webhook.
+
+Look up NIN or BVN with `POST /identity/lookups` if you need the name. We do not store KYC on the customer.
+
+## 2. Create the hold
+
+`POST /escrows` with your unique `reference`, `amount`, `currency`, and `parties`: one `payer`, one `payee`, different customers.
+
+Default status is `awaiting_funding`. Nothing is locked. Webhook: `escrow.created`.
+
+`debitPayer: true` locks the payer's `available` now. They must already have enough or the request fails **422** and no hold is created. Success: `escrow.created` then `escrow.funded`.
+
+A transfer into a NUBAN never locks this hold. To lock that money later, create a new hold with `debitPayer: true`.
+
+## 3. Fund it (if you did not debit)
+
+`POST /checkout/sessions` with `escrowId`. Amount and currency must match. The payer opens `checkoutUrl` (card, bank, bank_transfer, ussd).
+
+A second create for the same unfunded hold returns the **same** pending session. List sessions with `GET /checkout/sessions`.
+
+Wait for webhooks, not the browser callback. Paid + hold still awaiting → `payment.succeeded` then `escrow.funded` (status `held`). Paid after you cancelled → `wallet.credited` on the payer; the hold stays cancelled.
+
+## 4. After it is held
+
+| You want | Call | Money | Webhook |
+| --- | --- | --- | --- |
+| Payee earned it | `POST /escrows/{id}/release` | Held → payee `available` | `escrow.released` or `escrow.partially_released` |
+| Payer gets it back | `POST /escrows/{id}/refund` | Held → payer `available` | `escrow.refunded` |
+| Deal never funded | `POST /escrows/{id}/cancel` | Nothing | `escrow.cancelled` |
+| Freeze while you decide | `POST /escrows/{id}/disputes` | Stays held | `dispute.opened` |
+| Unfreeze and move | `POST .../disputes/{id}/resolve` | Per `action` | `dispute.resolved` plus the money-move events |
+
+Omit `amount` on release/refund to move everything still held. Pass a smaller amount to leave the rest. You can release 250 then refund 150.
+
+Release is not a bank transfer. Withdraw from `available` later.
+
+## 5. Pay out to a bank
+
+`POST /withdrawals` with `customerId`, `accountNumber`, `bankCode`, `amount`, and `reference`. We resolve the account and debit that customer's `available`. Listen for `withdrawal.completed` or `withdrawal.failed`. Optional: preview the name first with `POST /identity/bank-accounts/verify`.
+
+## Status cheat sheet
+
+Escrow, dispute, checkout, and withdrawal statuses are listed on the **Escrows**, **Checkout**, and **Payouts** groups. Rule of thumb:
+
+- If the hold is `disputed`, you cannot release or refund until you resolve.
+- If it is `awaiting_funding`, you cannot release or refund. Cancel or wait for funding.

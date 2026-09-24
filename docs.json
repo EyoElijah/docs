@@ -1,0 +1,187 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "name": "Demat",
+  "theme": "almond",
+  "logo": {
+    "light": "https://media.brand.dev/d9d402f4-4fde-4e2a-9fd9-6a7e3bcf6d27.png",
+    "dark": "https://media.brand.dev/d9d402f4-4fde-4e2a-9fd9-6a7e3bcf6d27.png"
+  },
+  "favicon": "https://media.brand.dev/f1453a7c-c621-4086-b61b-b11941e3a439.jpg",
+  "colors": {
+    "primary": "#5d2e8f",
+    "light": "#f8a41c",
+    "dark": "#b47c87"
+  },
+  "font": {
+    "headings": {
+      "family": "Jost"
+    },
+    "body": {
+      "family": "Jost"
+    }
+  },
+  "navbar": {
+    "primary": {
+      "type": "button",
+      "label": "Start Selling",
+      "href": "https://www.demat.shop/business/register"
+    }
+  },
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "api-reference/overview"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "api-reference/guides/how-it-works",
+              "api-reference/guides/authentication",
+              "api-reference/guides/rate-limits",
+              "api-reference/guides/pagination",
+              "api-reference/guides/errors",
+              "api-reference/guides/idempotency",
+              "api-reference/guides/webhooks"
+            ]
+          },
+          {
+            "group": "Customers",
+            "openapi": "https://api.demat.shop/docs/api/openapi.json",
+            "pages": [
+              "GET /customers",
+              "POST /customers",
+              "GET /customers/{customerId}"
+            ]
+          },
+          {
+            "group": "Escrows",
+            "openapi": "https://api.demat.shop/docs/api/openapi.json",
+            "pages": [
+              "POST /escrows",
+              "GET /escrows",
+              "GET /escrows/{escrowId}",
+              "POST /escrows/{escrowId}/release",
+              "POST /escrows/{escrowId}/refund",
+              "POST /escrows/{escrowId}/cancel",
+              "GET /escrows/{escrowId}/disputes",
+              "POST /escrows/{escrowId}/disputes",
+              "POST /escrows/{escrowId}/disputes/{disputeId}/resolve"
+            ]
+          },
+          {
+            "group": "Checkout",
+            "openapi": "https://api.demat.shop/docs/api/openapi.json",
+            "pages": [
+              "POST /checkout/sessions",
+              "GET /checkout/sessions",
+              "GET /checkout/sessions/{checkoutId}"
+            ]
+          },
+          {
+            "group": "Wallets",
+            "openapi": "https://api.demat.shop/docs/api/openapi.json",
+            "pages": [
+              "POST /wallets",
+              "GET /wallets",
+              "GET /wallets/{walletId}",
+              "POST /wallets/{walletId}/credits"
+            ]
+          },
+          {
+            "group": "Payouts",
+            "openapi": "https://api.demat.shop/docs/api/openapi.json",
+            "pages": [
+              "POST /withdrawals",
+              "GET /withdrawals",
+              "GET /withdrawals/{withdrawalId}"
+            ]
+          },
+          {
+            "group": "Identity",
+            "openapi": "https://api.demat.shop/docs/api/openapi.json",
+            "pages": [
+              "POST /identity/lookups",
+              "GET /identity/banks",
+              "POST /identity/bank-accounts/verify"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "getting-started/create-account",
+              "getting-started/quickstart-buyers",
+              "getting-started/quickstart-sellers"
+            ]
+          },
+          {
+            "group": "Selling on Demat",
+            "pages": [
+              "selling/storefront-setup",
+              "selling/listing-products",
+              "selling/listing-services",
+              "selling/managing-orders",
+              "selling/inventory-management",
+              "selling/team-management"
+            ]
+          },
+          {
+            "group": "Buying on Demat",
+            "pages": [
+              "buying/browsing-marketplace",
+              "buying/placing-orders",
+              "buying/escrow-protection",
+              "buying/chat-and-pickup"
+            ]
+          },
+          {
+            "group": "Payments & Wallet",
+            "pages": [
+              "payments/wallet-overview",
+              "payments/funding-wallet",
+              "payments/withdrawals",
+              "payments/fees",
+              "payments/refunds-and-disputes"
+            ]
+          },
+          {
+            "group": "Plans & Pricing",
+            "pages": [
+              "pricing/plans-overview",
+              "pricing/free-plan",
+              "pricing/basic-plan",
+              "pricing/premium-plan"
+            ]
+          },
+          {
+            "group": "Help & Policies",
+            "pages": [
+              "help/faq",
+              "help/safety-tips",
+              "help/terms-of-service",
+              "help/privacy-policy",
+              "help/contact"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/toluwani_idowu",
+      "instagram": "https://www.instagram.com"
+    }
+  }
+}

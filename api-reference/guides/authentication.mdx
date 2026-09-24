@@ -1,0 +1,51 @@
+---
+title: "Authentication"
+sidebarTitle: "Authentication"
+description: "Authenticate secret-key requests to the Demat Escrow API using Bearer tokens, and understand the difference between test and live keys."
+---
+
+All secret-key requests must be authenticated. The key identifies the merchant and the environment (test or live).
+
+Use the **Bearer** scheme:
+
+```text
+Authorization: Bearer sk_test_your_secret_key
+```
+
+Requests without a valid secret key return **401 Unauthorized**.
+
+## Key types
+
+| Type | Prefix | Where it is used |
+| --- | --- | --- |
+| Secret | `sk_test_` / `sk_live_` | Backend calls to this API **and** verifying [webhooks](/api-reference/guides/webhooks) (`x-demat-signature`). Keep it on the server only. |
+| Publishable | `pk_test_` / `pk_live_` | Frontend / checkout. Cannot call secret endpoints. |
+
+Find keys in the merchant dashboard:
+
+- `GET /merchants/me/api-keys` returns public keys and the **test** secret.
+- The **live secret is never listed**. Reveal it with `POST /merchants/me/api-keys/live/reveal` and the merchant password.
+
+You can always regenerate **test** keys. **Live** keys can be regenerated only after the account is verified **and** switched to live mode. Regenerating live does not return the secret in that response, so reveal it again with your password.
+
+## Test vs live
+
+| | Test | Live |
+| --- | --- | --- |
+| Host | `https://api.demat.shop` | `https://prod.demat.shop` |
+| Prefix | `sk_test_` / `pk_test_` | `sk_live_` / `pk_live_` |
+| Money | Sandbox / provider test rails | Real settlements |
+| Access | Test secret on the **dev** host | Live secret on the **prod** host, after admin verification **and** live mode |
+
+Calling `api.demat.shop` with `sk_live_` or `prod.demat.shop` with `sk_test_` returns **403**. Live keys on production also require admin verification **and** live mode.
+
+## Protect the secret key
+
+- Do not put `sk_` keys in frontend code, mobile apps, or git.
+- Store them in environment variables or a secrets manager.
+- Rotate a key immediately if you think it leaked.
+- Team members are not merchants. Only the owner can reveal the live secret.
+
+## SSL
+
+Call the API over HTTPS. Do not disable TLS verification (`VERIFY_PEER` or equivalent) in production.

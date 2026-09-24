@@ -1,0 +1,58 @@
+---
+title: "Errors"
+sidebarTitle: "Errors"
+description: "The Demat Escrow API returns HTTP status codes plus a JSON error envelope. Branch on error.code, not the message text, and know when to retry."
+---
+
+The API uses HTTP status codes plus a JSON error envelope. Always read both the status code and `error.code`.
+
+## HTTP status codes
+
+| Code | Meaning |
+| --- | --- |
+| **200** | Success. |
+| **201** | A resource was created. |
+| **400** | Invalid request, failed validation, or business rule (for example insufficient balance). |
+| **401** | Missing or invalid secret key / credentials. |
+| **403** | Authenticated, but not allowed (test key on production, live key on development, live key before verification / live mode, owner-only action, suspended account). |
+| **404** | Resource does not exist for this merchant. |
+| **409** | Conflict (duplicate reference, idempotency key reused with a different body, already released). |
+| **422** | Semantic validation failed (malformed payload that passed basic checks). |
+| **502** | Upstream provider error (banks, checkout provider). |
+
+## Error envelope
+
+```json
+{
+  "success": false,
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "Idempotency-Key header is required for this operation",
+    "details": {}
+  },
+  "meta": {
+    "requestId": "req_01hxyz"
+  }
+}
+```
+
+| Field | Description |
+| --- | --- |
+| `error.code` | Stable machine-readable code. Branch on this, not on the message text. |
+| `error.message` | Human-readable explanation. |
+| `error.details` | Optional extra fields (for example `available` and `requested` on insufficient balance). |
+| `meta.requestId` | Include this when you contact support. |
+
+## Common codes
+
+| `error.code` | Typical HTTP | When it happens |
+| --- | --- | --- |
+| `UNAUTHORIZED` | 401 | No Bearer token, bad JWT, or unknown secret key. |
+| `FORBIDDEN` | 403 | Wrong key for the host, live key used before verification / live mode, or a team member hitting an owner-only route. |
+| `NOT_FOUND` | 404 | Unknown customer, escrow, wallet, or withdrawal for this merchant. |
+| `INVALID_REQUEST` | 400 | Missing idempotency key, bad environment, or other client error. |
+| `INSUFFICIENT_BALANCE` | 400 | Withdrawal or wallet debit larger than available funds. |
+| `PROVIDER_ERROR` | 502 | Bank resolve or payment provider failed. |
+| Duplicate / named conflicts | 409 | Email already used, merchant reference already exists, idempotency mismatch. |
+
+Do not retry **400 / 401 / 403 / 404 / 422** blindly. Retry **502** (and timeouts) with the **same** `Idempotency-Key` on money-moving POSTs.

@@ -1,0 +1,51 @@
+---
+title: "Pagination"
+sidebarTitle: "Pagination"
+description: "List endpoints use limit and offset. Walk pages until hasMore is false. Default page size is 20, maximum 100. Extra filters vary by resource."
+---
+
+List endpoints return a page of results, not the entire collection. Pagination uses `limit` and `offset`, the same pattern as other Demat APIs.
+
+## Query parameters
+
+| Parameter | Type | Description |
+| --- | --- | --- |
+| `limit` | integer | Page size. Default **20**, minimum **1**, maximum **100**. |
+| `offset` | integer | Number of records to skip. Default **0**. Use `0`, then `20`, then `40`, and so on. |
+| `status` | string | List filter where supported. Escrows: escrow status. Checkouts: session status. Withdrawals: transfer status. |
+| `customerId` | string | Escrow, checkout, wallet, and withdrawal lists. Escrows: payer or payee. Checkouts: that customer. Wallets: that wallet. Withdrawals: transfers that debit that customer. |
+| `escrowId` | string | Checkout list only. Sessions that fund this hold. |
+
+## Response shape
+
+```json
+{
+  "success": true,
+  "data": {
+    "customers": [{ "customerId": "cus_01hxyz" }],
+    "pagination": {
+      "total": 42,
+      "limit": 20,
+      "offset": 0,
+      "hasMore": true
+    }
+  },
+  "meta": {
+    "requestId": "req_01hxyz"
+  }
+}
+```
+
+| Field | Description |
+| --- | --- |
+| named array | The page of records. The key matches the resource: `customers`, `escrows`, `checkouts`, `wallets`, `withdrawals`, `bankAccounts`. |
+| `pagination.total` | Total matching records. |
+| `pagination.limit` | Page size used for this request. |
+| `pagination.offset` | How many records were skipped. |
+| `pagination.hasMore` | `true` when `offset + limit < total`. |
+
+## Walking a list
+
+1. Call the list endpoint with `limit=20` and `offset=0` (or omit both for those defaults).
+2. If `pagination.hasMore` is `true`, call again with the same `limit` and `offset` set to the previous `offset + limit`.
+3. Stop when `hasMore` is `false`.

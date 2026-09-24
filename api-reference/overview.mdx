@@ -1,0 +1,79 @@
+---
+title: "Demat Escrow API Reference"
+sidebarTitle: "Overview"
+description: "Integrate Demat Escrow with your backend to hold funds, release or refund, manage wallets, run checkout, and send payouts."
+---
+
+The Demat Escrow API is a RESTful, JSON API. Use your merchant secret key (`sk_test_...` or `sk_live_...`) to create customers, hold funds in escrow, manage wallets, run checkout, and send payouts.
+
+## Base URLs
+
+<table>
+  <colgroup>
+    <col width="122" />
+    <col width="255" />
+    <col width="134" />
+  </colgroup>
+  <thead>
+    <tr>
+      <th>Environment</th>
+      <th>Host</th>
+      <th>Key</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Development</td>
+      <td>`https://api.demat.shop/api/v1`</td>
+      <td>`sk_test_`</td>
+    </tr>
+    <tr>
+      <td>Production</td>
+      <td>`https://prod.demat.shop/api/v1`</td>
+      <td>`sk_live_`</td>
+    </tr>
+  </tbody>
+</table>
+
+The host and key must match. Mismatches return **403**.
+
+## Authentication
+
+Send your secret key on every request:
+
+```http
+Authorization: Bearer sk_test_your_secret_key
+Content-Type: application/json
+```
+
+Publishable keys (`pk_`) are for client-side checkout only and cannot call secret endpoints.
+
+## Money
+
+Amounts are integers in minor units (kobo for NGN). Send `10000` for ₦100.00.
+
+## Idempotency
+
+Money-moving `POST` routes require an `Idempotency-Key` header. Reuse the same key to safely retry after timeouts.
+
+<CardGroup cols={2}>
+  <Card title="Customers" icon="users" href="/api-reference/customers/create-a-customer">
+    Create buyers and sellers, submit KYC, and fetch balances.
+  </Card>
+
+  <Card title="Escrows" icon="lock" href="/api-reference/escrows/create-an-escrow">
+    Hold, release, refund, cancel, and dispute escrows.
+  </Card>
+
+  <Card title="Checkout" icon="credit-card" href="/api-reference/checkout/create-a-checkout-session-for-an-escrow-or-wallet">
+    Create hosted checkout sessions to fund an escrow or wallet.
+  </Card>
+
+  <Card title="Wallets" icon="wallet" href="/api-reference/wallets/create-a-customer-wallet">
+    Provision customer wallets and fund escrows from balance.
+  </Card>
+
+  <Card title="Payouts" icon="building-columns" href="/api-reference/payouts/list-supported-banks">
+    List banks, verify accounts, and send withdrawals.
+  </Card>
+</CardGroup>

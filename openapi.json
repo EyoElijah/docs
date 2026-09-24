@@ -1,0 +1,552 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/banks": {
+      "get": {
+        "operationId": "PayoutController_listBanks",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "Request succeeded",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "success": { "type": "boolean", "example": true },
+                    "data": { "$ref": "#/components/schemas/BankListResponseDto" },
+                    "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" }
+                  }
+                }
+              }
+            }
+          },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "502": { "description": "Payment provider error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "List supported banks",
+        "tags": ["payouts"],
+        "description": "List banks used when adding a payout account."
+      }
+    },
+    "/customers/{customerId}/bank-accounts": {
+      "post": {
+        "operationId": "PayoutController_addCustomerBankAccount",
+        "parameters": [{ "name": "customerId", "required": true, "in": "path", "schema": { "type": "string" } }],
+        "requestBody": {
+          "required": true,
+          "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateBankAccountDto" } } },
+          "description": "Bank code and account number. Name is resolved and checked."
+        },
+        "responses": {
+          "201": { "description": "Resource created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/BankAccountResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "409": { "description": "Conflict with current resource state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "422": { "description": "Business rule validation failed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "502": { "description": "Payment provider error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Add and verify a customer bank account",
+        "tags": ["payouts"],
+        "description": "Add and verify a customer bank account for payouts."
+      },
+      "get": {
+        "operationId": "PayoutController_listCustomerBankAccounts",
+        "parameters": [
+          { "name": "customerId", "required": true, "in": "path", "schema": { "type": "string" } },
+          { "name": "limit", "required": false, "in": "query", "description": "Number of records to return. Default 20, maximum 100.", "schema": { "example": 20, "type": "number" } },
+          { "name": "offset", "required": false, "in": "query", "description": "Number of records to skip. Default 0.", "schema": { "example": 0, "type": "number" } }
+        ],
+        "responses": {
+          "200": { "description": "Request succeeded", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/BankAccountListResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "List customer bank accounts",
+        "tags": ["payouts"],
+        "description": "List bank accounts for a customer."
+      }
+    },
+    "/merchants/me/bank-accounts": {
+      "post": {
+        "operationId": "PayoutController_addMerchantBankAccount",
+        "parameters": [],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateBankAccountDto" } } }, "description": "Bank code and account number. Name is resolved and checked." },
+        "responses": {
+          "201": { "description": "Resource created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/BankAccountResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "409": { "description": "Conflict with current resource state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "422": { "description": "Business rule validation failed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "502": { "description": "Payment provider error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Add and verify a merchant bank account",
+        "tags": ["payouts"],
+        "description": "Add and verify a merchant bank account for payouts."
+      },
+      "get": {
+        "operationId": "PayoutController_listMerchantBankAccounts",
+        "parameters": [
+          { "name": "limit", "required": false, "in": "query", "description": "Number of records to return. Default 20, maximum 100.", "schema": { "example": 20, "type": "number" } },
+          { "name": "offset", "required": false, "in": "query", "description": "Number of records to skip. Default 0.", "schema": { "example": 0, "type": "number" } }
+        ],
+        "responses": {
+          "200": { "description": "Request succeeded", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/BankAccountListResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "List merchant bank accounts",
+        "tags": ["payouts"],
+        "description": "List bank accounts on the merchant account."
+      }
+    },
+    "/withdrawals": {
+      "post": {
+        "operationId": "PayoutController_createWithdrawal",
+        "parameters": [{ "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateWithdrawalDto" } } }, "description": "Verified bank account, amount, unique reference, and which balance to debit." },
+        "responses": {
+          "201": { "description": "Resource created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/WithdrawalResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "409": { "description": "Conflict with current resource state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "422": { "description": "Business rule validation failed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "502": { "description": "Payment provider error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Create a withdrawal",
+        "tags": ["payouts"],
+        "description": "Send a payout from seller available balance or merchant earnings."
+      },
+      "get": {
+        "operationId": "PayoutController_listWithdrawals",
+        "parameters": [
+          { "name": "limit", "required": false, "in": "query", "description": "Number of records to return. Default 20, maximum 100.", "schema": { "example": 20, "type": "number" } },
+          { "name": "offset", "required": false, "in": "query", "description": "Number of records to skip. Default 0.", "schema": { "example": 0, "type": "number" } }
+        ],
+        "responses": {
+          "200": { "description": "Request succeeded", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/WithdrawalListResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "List withdrawals",
+        "tags": ["payouts"],
+        "description": "Page through withdrawals."
+      }
+    },
+    "/withdrawals/{withdrawalId}": {
+      "get": {
+        "operationId": "PayoutController_getWithdrawal",
+        "parameters": [{ "name": "withdrawalId", "required": true, "in": "path", "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Request succeeded", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/WithdrawalResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Get a withdrawal",
+        "tags": ["payouts"],
+        "description": "Fetch one withdrawal."
+      }
+    },
+    "/customers": {
+      "post": {
+        "operationId": "CustomerController_create",
+        "parameters": [],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateCustomerDto" } } }, "description": "Customer identity. Send merchantCustomerRef and/or email so the same person is not created twice." },
+        "responses": {
+          "201": { "description": "Resource created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/CustomerResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "409": { "description": "Conflict with current resource state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Create a customer",
+        "tags": ["customers"],
+        "description": "Create a buyer or seller on your merchant account."
+      },
+      "get": {
+        "operationId": "CustomerController_list",
+        "parameters": [
+          { "name": "limit", "required": false, "in": "query", "description": "Number of records to return. Default 20, maximum 100.", "schema": { "example": 20, "type": "number" } },
+          { "name": "offset", "required": false, "in": "query", "description": "Number of records to skip. Default 0.", "schema": { "example": 0, "type": "number" } }
+        ],
+        "responses": {
+          "200": { "description": "Request succeeded", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/CustomerListResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "List customers",
+        "tags": ["customers"],
+        "description": "Page through customers on this merchant account."
+      }
+    },
+    "/customers/{customerId}": {
+      "get": {
+        "operationId": "CustomerController_get",
+        "parameters": [{ "name": "customerId", "required": true, "in": "path", "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Request succeeded", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/CustomerDetailResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Get a customer with wallet balances",
+        "tags": ["customers"],
+        "description": "Fetch one customer and their wallet balances."
+      }
+    },
+    "/customers/{customerId}/kyc": {
+      "post": {
+        "operationId": "CustomerController_submitKyc",
+        "parameters": [{ "name": "customerId", "required": true, "in": "path", "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/SubmitKycDto" } } }, "description": "Identity type and the full NIN or BVN number." },
+        "responses": {
+          "201": { "description": "Resource created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/CustomerResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "422": { "description": "Business rule validation failed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Submit customer KYC (NIN or BVN)",
+        "tags": ["customers"],
+        "description": "Submit NIN or BVN for this customer."
+      }
+    },
+    "/escrows": {
+      "post": {
+        "operationId": "EscrowController_create",
+        "parameters": [{ "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateEscrowDto" } } }, "description": "Buyer, seller, amount, and your unique merchantReference." },
+        "responses": {
+          "201": { "description": "Resource created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/CreateEscrowResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "409": { "description": "Conflict with current resource state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Create an escrow",
+        "tags": ["escrows"],
+        "description": "Open an escrow between a buyer and a seller. Funds stay held until release or refund."
+      },
+      "get": {
+        "operationId": "EscrowController_list",
+        "parameters": [
+          { "name": "limit", "required": false, "in": "query", "description": "Number of records to return. Default 20, maximum 100.", "schema": { "example": 20, "type": "number" } },
+          { "name": "offset", "required": false, "in": "query", "description": "Number of records to skip. Default 0.", "schema": { "example": 0, "type": "number" } },
+          { "name": "status", "required": false, "in": "query", "description": "Return only escrows in this status.", "schema": { "type": "string", "enum": ["awaiting_funding", "funded", "partially_released", "released", "refunded", "cancelled", "disputed"] } }
+        ],
+        "responses": {
+          "200": { "description": "Request succeeded", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/EscrowListResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "List escrows",
+        "tags": ["escrows"],
+        "description": "Page through escrows, optionally filtered by status."
+      }
+    },
+    "/escrows/{escrowId}": {
+      "get": {
+        "operationId": "EscrowController_get",
+        "parameters": [{ "name": "escrowId", "required": true, "in": "path", "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Request succeeded", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/EscrowResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Get an escrow",
+        "tags": ["escrows"],
+        "description": "Fetch one escrow."
+      }
+    },
+    "/escrows/{escrowId}/release": {
+      "post": {
+        "operationId": "EscrowController_release",
+        "parameters": [
+          { "name": "escrowId", "required": true, "in": "path", "schema": { "type": "string" } },
+          { "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ReleaseEscrowDto" } } }, "description": "Optional amount (defaults to remaining held balance) and reason." },
+        "responses": {
+          "201": { "description": "Resource created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/ReleaseEscrowResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "409": { "description": "Conflict with current resource state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "422": { "description": "Business rule validation failed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Release held funds to the seller",
+        "tags": ["escrows"],
+        "description": "Pay held funds to the seller."
+      }
+    },
+    "/escrows/{escrowId}/refund": {
+      "post": {
+        "operationId": "EscrowController_refund",
+        "parameters": [
+          { "name": "escrowId", "required": true, "in": "path", "schema": { "type": "string" } },
+          { "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/RefundEscrowDto" } } }, "description": "Optional amount (defaults to remaining held balance) and reason." },
+        "responses": {
+          "201": { "description": "Resource created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/EscrowResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "409": { "description": "Conflict with current resource state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "422": { "description": "Business rule validation failed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Refund held funds to the buyer",
+        "tags": ["escrows"],
+        "description": "Return held funds to the buyer."
+      }
+    },
+    "/escrows/{escrowId}/cancel": {
+      "post": {
+        "operationId": "EscrowController_cancel",
+        "parameters": [
+          { "name": "escrowId", "required": true, "in": "path", "schema": { "type": "string" } },
+          { "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CancelEscrowDto" } } }, "description": "Optional reason for the cancellation." },
+        "responses": {
+          "201": { "description": "Resource created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/EscrowResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "409": { "description": "Conflict with current resource state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Cancel an unfunded escrow",
+        "tags": ["escrows"],
+        "description": "Cancel an escrow that has not been funded."
+      }
+    },
+    "/escrows/{escrowId}/disputes": {
+      "post": {
+        "operationId": "EscrowController_openDispute",
+        "parameters": [
+          { "name": "escrowId", "required": true, "in": "path", "schema": { "type": "string" } },
+          { "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/OpenDisputeDto" } } }, "description": "Who opened it, a reason code, and optional details." },
+        "responses": {
+          "201": { "description": "Resource created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/DisputeResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "409": { "description": "Conflict with current resource state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Open a dispute on a funded escrow",
+        "tags": ["escrows"],
+        "description": "Open a dispute on a funded escrow."
+      }
+    },
+    "/escrows/{escrowId}/disputes/{disputeId}/resolve": {
+      "post": {
+        "operationId": "EscrowController_resolveDispute",
+        "parameters": [
+          { "name": "escrowId", "required": true, "in": "path", "schema": { "type": "string" } },
+          { "name": "disputeId", "required": true, "in": "path", "schema": { "type": "string" } },
+          { "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ResolveDisputeDto" } } }, "description": "Action to take, plus amounts when splitting remaining funds." },
+        "responses": {
+          "201": { "description": "Resource created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/DisputeResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "409": { "description": "Conflict with current resource state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "422": { "description": "Business rule validation failed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Resolve a dispute by release, refund, or split",
+        "tags": ["escrows"],
+        "description": "Settle a dispute by release, refund, or split."
+      }
+    },
+    "/public/escrows/{token}": {
+      "get": {
+        "operationId": "EscrowController_guestStatus",
+        "parameters": [{ "name": "token", "required": true, "in": "path", "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Request succeeded", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/EscrowResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "summary": "Guest buyer escrow status",
+        "tags": ["escrows"],
+        "description": "Guest-buyer status for an escrow. No secret key required."
+      }
+    },
+    "/checkout/sessions": {
+      "post": {
+        "operationId": "CheckoutController_create",
+        "parameters": [{ "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateCheckoutSessionDto" } } }, "description": "Target escrow or wallet, amount, payer email, and payment methods." },
+        "responses": {
+          "201": { "description": "Resource created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/CheckoutSessionResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "409": { "description": "Conflict with current resource state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "422": { "description": "Business rule validation failed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "502": { "description": "Payment provider error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Create a checkout session for an escrow or wallet",
+        "tags": ["checkout"],
+        "description": "Start hosted checkout to fund an escrow or credit a wallet."
+      }
+    },
+    "/customers/{customerId}/wallet": {
+      "post": {
+        "operationId": "WalletController_create",
+        "parameters": [
+          { "name": "customerId", "required": true, "in": "path", "schema": { "type": "string" } },
+          { "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateWalletDto" } } }, "description": "Optional currency, funding method, and DVA consent." },
+        "responses": {
+          "201": { "description": "Resource created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/WalletResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "409": { "description": "Conflict with current resource state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "422": { "description": "Business rule validation failed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "502": { "description": "Payment provider error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Create a customer wallet",
+        "tags": ["wallets"],
+        "description": "Create a wallet for a customer."
+      }
+    },
+    "/wallets/{walletId}": {
+      "get": {
+        "operationId": "WalletController_get",
+        "parameters": [{ "name": "walletId", "required": true, "in": "path", "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Request succeeded", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/WalletResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Get a wallet and balances",
+        "tags": ["wallets"],
+        "description": "Fetch a wallet and its balances."
+      }
+    },
+    "/wallets/{walletId}/pay-escrow": {
+      "post": {
+        "operationId": "WalletController_payEscrow",
+        "parameters": [
+          { "name": "walletId", "required": true, "in": "path", "schema": { "type": "string" } },
+          { "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": { "required": true, "content": { "application/json": { "schema": { "$ref": "#/components/schemas/PayEscrowFromWalletDto" } } }, "description": "The escrow to fund. The wallet must belong to the buyer." },
+        "responses": {
+          "201": { "description": "Resource created", "content": { "application/json": { "schema": { "type": "object", "properties": { "success": { "type": "boolean", "example": true }, "data": { "$ref": "#/components/schemas/EscrowResponseDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } } } } } },
+          "400": { "description": "Invalid request or validation error", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "401": { "description": "Missing or invalid credentials", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "403": { "description": "Not authorized for this resource", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "404": { "description": "Resource not found", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "409": { "description": "Conflict with current resource state", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } },
+          "422": { "description": "Business rule validation failed", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ErrorResponseDto" } } } }
+        },
+        "security": [{ "bearer": [] }],
+        "summary": "Fund an escrow from wallet available balance",
+        "tags": ["wallets"],
+        "description": "Fund an escrow from this wallet's available balance."
+      }
+    }
+  },
+  "info": {
+    "title": "Demat Escrow API",
+    "description": "Learn how to integrate Demat Escrow into your app. This reference covers the **secret-key API**, the same operations you can run from the merchant dashboard, callable from your backend.\n\n> **Before you begin**\n> Create a merchant account in the Demat dashboard, complete onboarding, and copy your **test secret key** (`sk_test_...`). Use test keys until your account is verified and you are ready to go live.\n\nThe Escrow API is a RESTful, JSON API. Most routes require authentication. Use it to create customers, hold funds in escrow, release or refund those funds, manage wallets, start checkout, and send payouts.\n\nAll requests must be made over **HTTPS**. Unencrypted HTTP is not supported in production.",
+    "version": "1.0",
+    "contact": {}
+  },
+  "tags": [
+    { "name": "customers", "description": "Create and retrieve customers on your merchant account.", "x-displayName": "Customers" },
+    { "name": "escrows", "description": "Hold funds between a buyer and a seller, then release, refund, cancel, or dispute.", "x-displayName": "Escrows" },
+    { "name": "checkout", "description": "Create a hosted checkout session to fund an escrow or credit a wallet.", "x-displayName": "Checkout" },
+    { "name": "wallets", "description": "Provision a customer wallet, inspect balances, and fund an escrow.", "x-displayName": "Wallets" },
+    { "name": "payouts", "description": "List banks, attach verified bank accounts, and withdraw earnings.", "x-displayName": "Payouts" }
+  ],
+  "servers": [
+    {
+      "url": "{baseUrl}",
+      "description": "API base URL",
+      "variables": {
+        "baseUrl": {
+          "default": "https://api.demat.shop/api/v1",
+          "description": "Full base URL including /api/v1."
+        }
+      }
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearer": {
+        "scheme": "bearer",
+        "bearerFormat": "Secret Key",
+        "type": "http",
+        "description": "Secret API key. Use `sk_test_...` on api.demat.shop and `sk_live_...` on prod.demat.shop."
+      }
+    },
+    "schemas": {
+      "ErrorBodyDto": { "type": "object", "properties": { "code": { "type": "string", "example": "INVALID_REQUEST" }, "message": { "type": "string", "example": "Invalid request" }, "details": { "type": "object", "additionalProperties": true, "example": {} } }, "required": ["code", "message", "details"] },
+      "EnvelopeMetaDto": { "type": "object", "properties": { "requestId": { "type": "string", "example": "req_01hxyz" } }, "required": ["requestId"] },
+      "ErrorResponseDto": { "type": "object", "properties": { "success": { "type": "boolean", "example": false }, "error": { "$ref": "#/components/schemas/ErrorBodyDto" }, "meta": { "$ref": "#/components/schemas/EnvelopeMetaDto" } }, "required": ["success", "error", "meta"] },
+      "BankResponseDto": { "type": "object", "properties": { "name": { "type": "string", "example": "Guaranty Trust Bank" }, "code": { "type": "string", "example": "058" }, "slug": { "type": "string", "example": "gtbank" } }, "required": ["name", "code"] },
+      "BankListResponseDto": { "type": "object", "properties": { "banks": { "type": "array", "items": { "$ref": "#/components/schemas/BankResponseDto" } } }, "required": ["banks"] },
+      "BankAccountResponseDto": { "type": "object", "properties": { "bankAccountId": { "type": "string", "example": "ba_01hxyz" }, "ownerType": { "type": "string", "enum": ["customer", "merchant"] }, "ownerId": { "type": "string", "example": "cus_01hxyz" }, "status": { "type": "string", "enum": ["pending_verification", "verified", "failed"] }, "bankCode": { "type": "string", "example": "058" }, "bankName": { "type": "string", "example": "GTBank", "nullable": true }, "accountName": { "type": "string", "example": "JANE DOE" }, "last4": { "type": "string", "example": "6789" } }, "required": ["bankAccountId", "ownerType", "ownerId", "status", "bankCode", "accountName", "last4"] },
+      "CreateBankAccountDto": { "type": "object", "properties": { "bankCode": { "type": "string", "example": "058", "description": "CBN bank code from GET /banks." }, "accountNumber": { "type": "string", "example": "0123456789", "description": "NUBAN account number." }, "accountName": { "type": "string", "example": "Jane Doe", "description": "Expected account name." } }, "required": ["bankCode", "accountNumber"] },
+      "PaginationDto": { "type": "object", "properties": { "total": { "type": "number", "example": 42 }, "limit": { "type": "number", "example": 20 }, "offset": { "type": "number", "example": 0 }, "hasMore": { "type": "boolean", "example": true } }, "required": ["total", "limit", "offset", "hasMore"] },
+      "BankAccountListResponseDto": { "type": "object", "properties": { "bankAccounts": { "type": "array", "items": { "$ref": "#/components/schemas/BankAccountResponseDto" } }, "pagination": { "$ref": "#/components/schemas/PaginationDto" } }, "required": ["bankAccounts", "pagination"] },
+      "WithdrawalResponseDto": { "type": "object", "properties": { "withdrawalId": { "type": "string", "example": "wd_01hxyz" }, "status": { "type": "string", "enum": ["processing", "completed", "failed"] }, "amount": { "type": "number", "example": 40000 }, "currency": { "type": "string", "example": "NGN" }, "reference": { "type": "string", "example": "seller-payout-12345" }, "sourceType": { "type": "string", "enum": ["seller_available", "merchant_earnings"] }, "customerId": { "type": "string", "example": "cus_01hxyz", "nullable": true }, "bankAccountId": { "type": "string", "example": "ba_01hxyz" }, "providerReference": { "type": "string", "nullable": true }, "failureReason": { "type": "string", "nullable": true } }, "required": ["withdrawalId", "status", "amount", "currency", "reference", "sourceType", "bankAccountId"] },
+      "CreateWithdrawalDto": { "type": "object", "properties": { "bankAccountId": { "type": "string", "example": "ba_01J...", "description": "Verified bank account id to pay into." }, "amount": { "type": "number", "example": 40000, "description": "Amount to withdraw in minor units (kobo)." }, "currency": { "type": "string", "example": "NGN" }, "reference": { "type": "string", "example": "seller-payout-12345" }, "sourceType": { "type": "string", "enum": ["seller_available", "merchant_earnings"] }, "customerId": { "type": "string" }, "merchantEarnings": { "type": "boolean" } }, "required": ["bankAccountId", "amount", "currency", "reference"] },
+      "WithdrawalListResponseDto": { "type": "object", "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/WithdrawalResponseDto" } }, "pagination": { "$ref": "#/components/schemas/PaginationDto" } }, "required": ["data", "pagination"] },
+      "CustomerResponseDto": { "type": "object", "properties": { "customerId": { "type": "string", "example": "cus_01hxyz" }, "merchantCustomerRef": { "type": "string", "example": "cust_789", "nullable": true }, "email": { "type": "string", "example": "buyer@example.com", "nullable": true }, "firstName": { "type": "string", "example": "Jane", "nullable": true }, "lastName": { "type": "string", "example": "Doe", "nullable": true }, "phone": { "type": "string", "example": "+2348012345678", "nullable": true }, "isGuest": { "type": "boolean", "example": false }, "status": { "type": "string", "enum": ["active", "disabled"] }, "kycStatus": { "type": "string", "enum": ["unverified", "pending", "verified", "failed"] }, "walletId": { "type": "string", "nullable": true } }, "required": ["customerId", "isGuest", "status", "kycStatus"] },
+      "CreateCustomerDto": { "type": "object", "properties": { "merchantCustomerRef": { "type": "string", "example": "cust_789" }, "email": { "type": "string", "example": "buyer@example.com" }, "firstName": { "type": "string" }, "lastName": { "type": "string" }, "phone": { "type": "string" }, "country": { "type": "string" }, "metadata": { "type": "object" } } },
+      "CustomerListResponseDto": { "type": "object", "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/CustomerResponseDto" } }, "pagination": { "$ref": "#/components/schemas/PaginationDto" } }, "required": ["data", "pagination"] },
+      "CustomerDetailResponseDto": { "type": "object", "properties": { "customerId": { "type": "string" }, "merchantCustomerRef": { "type": "string", "nullable": true }, "email": { "type": "string", "nullable": true }, "firstName": { "type": "string", "nullable": true }, "lastName": { "type": "string", "nullable": true }, "phone": { "type": "string", "nullable": true }, "isGuest": { "type": "boolean" }, "status": { "type": "string", "enum": ["active", "disabled"] }, "kycStatus": { "type": "string", "enum": ["unverified", "pending", "verified", "failed"] }, "walletId": { "type": "string", "nullable": true }, "availableBalance": { "type": "number", "example": 0 }, "escrowBalance": { "type": "number", "example": 0 } }, "required": ["customerId", "isGuest", "status", "kycStatus", "availableBalance", "escrowBalance"] },
+      "SubmitKycDto": { "type": "object", "properties": { "identityType": { "type": "string", "example": "nin", "enum": ["nin", "bvn"] }, "identityNumber": { "type": "string", "example": "12345678901" } }, "required": ["identityType", "identityNumber"] },
+      "CreateEscrowResponseDto": { "type": "object", "properties": { "escrowId": { "type": "string", "example": "esc_01hxyz" }, "merchantReference": { "type": "string", "example": "order_12345" }, "status": { "type": "string", "enum": ["awaiting_funding", "funded", "partially_released", "released", "refunded", "cancelled", "disputed"] }, "amount": { "type": "number", "example": 40000 }, "currency": { "type": "string", "example": "NGN" }, "releasedAmount": { "type": "number", "example": 0 }, "refundedAmount": { "type": "number", "example": 0 }, "remainingAmount": { "type": "number", "example": 40000 }, "feeAmount": { "type": "number", "example": 0 }, "buyerId": { "type": "string", "example": "cus_buyer" }, "sellerId": { "type": "string", "example": "cus_seller" }, "description": { "type": "string", "nullable": true }, "fundedAt": { "format": "date-time", "type": "string", "nullable": true }, "releasedAt": { "format": "date-time", "type": "string", "nullable": true }, "refundedAt": { "format": "date-time", "type": "string", "nullable": true }, "guestAccessToken": { "type": "string", "nullable": true }, "guestStatusUrl": { "type": "string", "nullable": true } }, "required": ["escrowId", "merchantReference", "status", "amount", "currency", "releasedAmount", "refundedAmount", "remainingAmount", "feeAmount", "buyerId", "sellerId"] },
+      "EscrowPartyDto": { "type": "object", "properties": { "customerId": { "type": "string" }, "email": { "type": "string" } } },
+      "CreateEscrowDto": { "type": "object", "properties": { "merchantReference": { "type": "string", "example": "order_12345" }, "buyer": { "allOf": [{ "$ref": "#/components/schemas/EscrowPartyDto" }] }, "seller": { "allOf": [{ "$ref": "#/components/schemas/EscrowPartyDto" }] }, "amount": { "type": "number", "example": 40000 }, "currency": { "type": "string", "example": "NGN" }, "description": { "type": "string" }, "autoReleaseAt": { "type": "string" }, "deliveryDeadline": { "type": "string" }, "metadata": { "type": "object" } }, "required": ["merchantReference", "buyer", "seller", "amount", "currency"] },
+      "EscrowResponseDto": { "type": "object", "properties": { "escrowId": { "type": "string" }, "merchantReference": { "type": "string" }, "status": { "type": "string", "enum": ["awaiting_funding", "funded", "partially_released", "released", "refunded", "cancelled", "disputed"] }, "amount": { "type": "number" }, "currency": { "type": "string" }, "releasedAmount": { "type": "number" }, "refundedAmount": { "type": "number" }, "remainingAmount": { "type": "number" }, "feeAmount": { "type": "number" }, "buyerId": { "type": "string" }, "sellerId": { "type": "string" }, "description": { "type": "string", "nullable": true }, "fundedAt": { "format": "date-time", "type": "string", "nullable": true }, "releasedAt": { "format": "date-time", "type": "string", "nullable": true }, "refundedAt": { "format": "date-time", "type": "string", "nullable": true } }, "required": ["escrowId", "merchantReference", "status", "amount", "currency", "releasedAmount", "refundedAmount", "remainingAmount", "feeAmount", "buyerId", "sellerId"] },
+      "EscrowListResponseDto": { "type": "object", "properties": { "data": { "type": "array", "items": { "$ref": "#/components/schemas/EscrowResponseDto" } }, "pagination": { "$ref": "#/components/schemas/PaginationDto" } }, "required": ["data", "pagination"] },
+      "ReleaseEscrowResponseDto": { "type": "object", "properties": { "escrowId": { "type": "string" }, "merchantReference": { "type": "string" }, "status": { "type": "string", "enum": ["awaiting_funding", "funded", "partially_released", "released", "refunded", "cancelled", "disputed"] }, "amount": { "type": "number" }, "currency": { "type": "string" }, "releasedAmount": { "type": "number" }, "refundedAmount": { "type": "number" }, "remainingAmount": { "type": "number" }, "feeAmount": { "type": "number" }, "buyerId": { "type": "string" }, "sellerId": { "type": "string" }, "sellerAvailableBalance": { "type": "number", "example": 39600 } }, "required": ["escrowId", "merchantReference", "status", "amount", "currency", "releasedAmount", "refundedAmount", "remainingAmount", "feeAmount", "buyerId", "sellerId", "sellerAvailableBalance"] },
+      "ReleaseEscrowDto": { "type": "object", "properties": { "amount": { "type": "number", "example": 40000 }, "reason": { "type": "string", "example": "buyer_confirmed_delivery" } } },
+      "RefundEscrowDto": { "type": "object", "properties": { "amount": { "type": "number", "example": 40000 }, "reason": { "type": "string", "example": "seller_unable_to_fulfill" } } },
+      "CancelEscrowDto": { "type": "object", "properties": { "reason": { "type": "string" } } },
+      "DisputeResponseDto": { "type": "object", "properties": { "disputeId": { "type": "string" }, "escrowId": { "type": "string" }, "status": { "type": "string", "enum": ["open", "resolved"] }, "openedBy": { "type": "string", "example": "buyer" }, "reasonCode": { "type": "string", "example": "ITEM_NOT_RECEIVED" }, "description": { "type": "string", "nullable": true }, "resolution": { "type": "string", "enum": ["release", "refund", "split"], "nullable": true }, "releasedAmount": { "type": "number" }, "refundedAmount": { "type": "number" } }, "required": ["disputeId", "escrowId", "status", "openedBy", "reasonCode", "releasedAmount", "refundedAmount"] },
+      "OpenDisputeDto": { "type": "object", "properties": { "openedBy": { "type": "string", "example": "buyer" }, "reasonCode": { "type": "string", "example": "ITEM_NOT_RECEIVED" }, "description": { "type": "string" } }, "required": ["openedBy", "reasonCode"] },
+      "ResolveDisputeDto": { "type": "object", "properties": { "action": { "type": "string", "enum": ["release", "refund", "split"] }, "releaseAmount": { "type": "number" }, "refundAmount": { "type": "number" } }, "required": ["action"] },
+      "CheckoutSessionResponseDto": { "type": "object", "properties": { "checkoutId": { "type": "string" }, "status": { "type": "string", "enum": ["pending", "completed", "expired", "failed"] }, "checkoutUrl": { "type": "string", "nullable": true }, "paymentId": { "type": "string" }, "provider": { "type": "string", "example": "paystack" }, "expiresAt": { "format": "date-time", "type": "string" } }, "required": ["checkoutId", "status", "paymentId", "provider", "expiresAt"] },
+      "CheckoutCustomerDto": { "type": "object", "properties": { "email": { "type": "string", "example": "buyer@example.com" } }, "required": ["email"] },
+      "CreateCheckoutSessionDto": { "type": "object", "properties": { "escrowId": { "type": "string" }, "walletId": { "type": "string" }, "amount": { "type": "number", "example": 40000 }, "currency": { "type": "string", "example": "NGN" }, "customer": { "allOf": [{ "$ref": "#/components/schemas/CheckoutCustomerDto" }] }, "paymentMethods": { "type": "array", "items": { "type": "string" }, "example": ["card", "bank_transfer"] }, "successUrl": { "type": "string" }, "cancelUrl": { "type": "string" } }, "required": ["amount", "currency", "customer", "paymentMethods"] },
+      "WalletProviderAccountResponseDto": { "type": "object", "properties": { "accountNumber": { "type": "string", "example": "0123456789" }, "bankName": { "type": "string", "example": "Wema Bank", "nullable": true } }, "required": ["accountNumber"] },
+      "WalletResponseDto": { "type": "object", "properties": { "walletId": { "type": "string" }, "customerId": { "type": "string" }, "status": { "type": "string", "enum": ["provisioning", "active", "disabled"] }, "currency": { "type": "string", "example": "NGN" }, "available": { "type": "number" }, "pending": { "type": "number" }, "escrow": { "type": "number" }, "total": { "type": "number" }, "providerAccount": { "nullable": true, "allOf": [{ "$ref": "#/components/schemas/WalletProviderAccountResponseDto" }] } }, "required": ["walletId", "customerId", "status", "currency", "available", "pending", "escrow", "total"] },
+      "CreateWalletDto": { "type": "object", "properties": { "currency": { "type": "string", "example": "NGN" }, "fundingMethod": { "type": "string", "enum": ["stored_balance", "dedicated_virtual_account"], "example": "stored_balance" }, "consent": { "type": "boolean" } } },
+      "PayEscrowFromWalletDto": { "type": "object", "properties": { "escrowId": { "type": "string" } }, "required": ["escrowId"] }
+    }
+  }
+}

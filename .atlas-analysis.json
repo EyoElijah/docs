@@ -1,0 +1,102 @@
+{
+  "projectType": "saas",
+  "projectName": "Demat",
+  "projectDescription": "Demat is an African marketplace platform where individuals and businesses can list products and services, manage storefronts, chat with buyers, and transact securely through an escrow-backed payment system.",
+  "theme": "almond",
+  "primaryColor": "#5d2e8f",
+  "lightColor": "#f8a41c",
+  "darkColor": "#b47c87",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "getting-started/create-account",
+              "getting-started/quickstart-buyers",
+              "getting-started/quickstart-sellers"
+            ]
+          },
+          {
+            "group": "Selling on Demat",
+            "pages": [
+              "selling/storefront-setup",
+              "selling/listing-products",
+              "selling/listing-services",
+              "selling/managing-orders",
+              "selling/inventory-management",
+              "selling/team-management"
+            ]
+          },
+          {
+            "group": "Buying on Demat",
+            "pages": [
+              "buying/browsing-marketplace",
+              "buying/placing-orders",
+              "buying/escrow-protection",
+              "buying/chat-and-pickup"
+            ]
+          },
+          {
+            "group": "Payments & Wallet",
+            "pages": [
+              "payments/wallet-overview",
+              "payments/funding-wallet",
+              "payments/withdrawals",
+              "payments/fees",
+              "payments/refunds-and-disputes"
+            ]
+          },
+          {
+            "group": "Plans & Pricing",
+            "pages": [
+              "pricing/plans-overview",
+              "pricing/free-plan",
+              "pricing/basic-plan",
+              "pricing/premium-plan"
+            ]
+          },
+          {
+            "group": "Help & Policies",
+            "pages": [
+              "help/faq",
+              "help/safety-tips",
+              "help/terms-of-service",
+              "help/privacy-policy",
+              "help/contact"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Escrow-backed payments — funds held securely until buyer confirms delivery",
+    "Individual & business selling — list single items or run a full branded storefront",
+    "In-app buyer-seller chat and pickup coordination",
+    "Inventory management with stock alerts",
+    "Sales analytics and real-time dashboards",
+    "Team management with role-based staff access",
+    "Appointment and service booking system",
+    "Shareable branded store link",
+    "AI-powered product recommendations (Basic plan+)",
+    "Subscription plans: Free, Basic (₦4,000/mo), Premium (₦8,500/mo)",
+    "Marketplace discovery across Fashion, Gadgets, Property, Automobile, Houseware, Services, Thrift, and Beauty categories",
+    "NDPR-compliant data protection"
+  ],
+  "publicApiSurface": [
+    "Wallet funding via Paystack (1% deposit fee, max ₦300)",
+    "Withdrawal tiers: ₦10 (≤₦5,000), ₦25 (₦5,001–₦50,000), ₦50 (>₦50,000)",
+    "3% seller fee on completed transaction payouts",
+    "Escrow release upon buyer delivery confirmation",
+    "Order cancellation window (before buyer confirmation)",
+    "Refund processing: 3–5 business days after dispute resolution",
+    "KYC: NIN optional, BVN required for wallet activation",
+    "Bulk product import/export via CSV/Excel (Premium)",
+    "Downloadable invoices per order (Premium)",
+    "Store link format: demat.shop/[storename]"
+  ]
+}
